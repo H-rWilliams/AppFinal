@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DetailView: View {
     let pokemon: Pokemon
-    @Binding var favorites: Set<Int>  // Pass in favorites from parent
+    @Binding var favorites: Set<Int>
      
     var isFavorite: Bool {
         favorites.contains(pokemon.id)
@@ -18,13 +18,21 @@ struct DetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                AsyncImage(url: URL(string: pokemon.sprites.front_default)) { image in
-                    image
+                if let imageUrl = pokemon.sprites.front_default,
+                   let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 150, height: 150)
+                    } placeholder: {
+                        ProgressView()
+                    }
+                } else {
+                    Image(systemName: "questionmark.circle")
                         .resizable()
-                        .scaledToFit()
                         .frame(width: 150, height: 150)
-                } placeholder: {
-                    ProgressView()
+                        .foregroundColor(.gray)
                 }
 
                 Text(pokemon.name.capitalized)
@@ -65,3 +73,4 @@ struct DetailView: View {
         .navigationTitle(pokemon.name.capitalized)
     }
 }
+

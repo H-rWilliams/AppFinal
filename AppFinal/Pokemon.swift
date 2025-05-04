@@ -16,7 +16,7 @@ struct Pokemon: Identifiable, Decodable {
     let types: [TypeEntry]
     
     struct Sprites: Decodable {
-        let front_default: String
+        let front_default: String?
     }
     
     struct TypeEntry: Decodable {

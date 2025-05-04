@@ -9,7 +9,8 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
-    
+    @Binding var favorites: Set<Int>
+
     var body: some View {
         VStack {
             if viewModel.pokemonList.isEmpty {
@@ -20,19 +21,26 @@ struct HomeView: View {
                     LazyVStack(spacing: 16) {
                         ForEach(viewModel.pokemonList) { pokemon in
                             NavigationLink {
-                                // Placeholder — later you'll pass this to DetailView
-                                Text("Details for \(pokemon.name.capitalized)")
+                                DetailView(pokemon: pokemon, favorites: $favorites)
                             } label: {
                                 HStack(spacing: 16) {
-                                    AsyncImage(url: URL(string: pokemon.sprites.front_default)) { image in
-                                        image
+                                    if let imageUrl = pokemon.sprites.front_default,
+                                       let url = URL(string: imageUrl) {
+                                        AsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 60, height: 60)
+                                        } placeholder: {
+                                            ProgressView()
+                                        }
+                                    } else {
+                                        Image(systemName: "questionmark.circle")
                                             .resizable()
-                                            .scaledToFit()
                                             .frame(width: 60, height: 60)
-                                    } placeholder: {
-                                        ProgressView()
+                                            .foregroundColor(.gray)
                                     }
-                                    
+
                                     Text(pokemon.name.capitalized)
                                         .font(.headline)
                                 }
@@ -49,3 +57,4 @@ struct HomeView: View {
         .navigationTitle("Pokédex")
     }
 }
+

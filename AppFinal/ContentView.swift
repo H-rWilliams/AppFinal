@@ -7,47 +7,26 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct ContentView: View {
+    @State private var favorites: Set<Int> = []
+    
     var body: some View {
         TabView {
-//            Home View, initial call
-//            Display basic info, include a button to favorite
             NavigationStack {
-                
-                
-                VStack {
-                    
-                }
-                
+                HomeView(favorites: $favorites)
             }
-            
             .tabItem {
-                Label("Home", systemImage: "house")
+                Label("Browse", systemImage: "house")
             }
-            
-//            Detail view, inspect specific element
+
             NavigationStack {
-//                Pass values for an API req, return new view with response
-//                Picture, label, stats, bio, etc.
-                DetailView()
+                FavoritesView(favorites: $favorites)
             }
-            
-            .tabItem {
-                Label("Detailed", systemImage:"magnifyingglass")
-            }
-            
-//            Favorites, view a collection and nav to Detailed
-            NavigationStack {
-//                Pass/View collection of favorited items
-//                Picture and Label
-//                Nav to detailview based on clicked favorite
-                Favorites()
-            }
-            
             .tabItem {
                 Label("Favorites", systemImage: "star")
             }
-            
         }
     }
 }

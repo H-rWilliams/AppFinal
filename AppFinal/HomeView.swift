@@ -2,59 +2,77 @@
 //  HomeView.swift
 //  AppFinal
 //
-//  Created by Sherry Williams on 5/3/25.
+//  Created by Hunter Williams on 5/3/25.
 //
 
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
-    @Binding var favorites: Set<Int>
+    @StateObject var viewModel = DogViewModel()
+    @EnvironmentObject var appState: AppState
+    @State private var breedInput = ""
 
     var body: some View {
         VStack {
-            if viewModel.pokemonList.isEmpty {
-                ProgressView("Loading Pokémon...")
-                    .padding()
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(viewModel.pokemonList) { pokemon in
-                            NavigationLink {
-                                DetailView(pokemon: pokemon, favorites: $favorites)
-                            } label: {
-                                HStack(spacing: 16) {
-                                    if let imageUrl = pokemon.sprites.front_default,
-                                       let url = URL(string: imageUrl) {
-                                        AsyncImage(url: url) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 60, height: 60)
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                    } else {
-                                        Image(systemName: "questionmark.circle")
-                                            .resizable()
-                                            .frame(width: 60, height: 60)
-                                            .foregroundColor(.gray)
-                                    }
+            // Breed search
+            HStack {
+                TextField("Enter dog breed", text: $breedInput)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
 
-                                    Text(pokemon.name.capitalized)
-                                        .font(.headline)
+                Button("Search") {
+                    if breedInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        viewModel.fetchRandomDogs()
+                    } else {
+                        viewModel.fetchBreedImages(for: breedInput.lowercased())
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+
+            // Dog images
+            ScrollView {
+                LazyVStack(spacing: 10) {
+                    ForEach(viewModel.dogImageURLs, id: \.self) { url in
+                        NavigationLink(destination: DetailView(imageURL: url)) {
+                            VStack {
+                                AsyncImage(url: URL(string: url)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .cornerRadius(10)
+                                } placeholder: {
+                                    ProgressView()
                                 }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(12)
+                                .frame(height: 200)
+                                .padding(.horizontal)
+
+                                Button(appState.favorites.contains(url) ? "Unfavorite" : "Favorite") {
+                                    toggleFavorite(url)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .padding(.bottom)
                             }
                         }
                     }
-                    .padding()
                 }
             }
         }
-        .navigationTitle("Pokédex")
+        .navigationTitle("Browse Dogs")
+        .onAppear {
+            viewModel.fetchRandomDogs()
+        }
+    }
+
+    // Toggle favorite state
+    func toggleFavorite(_ url: String) {
+        if let index = appState.favorites.firstIndex(of: url) {
+            appState.favorites.remove(at: index)
+        } else {
+            appState.favorites.append(url)
+        }
     }
 }
+
+
 

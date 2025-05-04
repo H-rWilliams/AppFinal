@@ -8,54 +8,51 @@
 import SwiftUI
 
 struct FavoritesView: View {
-    @Binding var favorites: Set<Int>
-    @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject var appState: AppState
 
     var body: some View {
         VStack {
-            if favorites.isEmpty {
+            if appState.favorites.isEmpty {
                 Text("No favorites yet.")
-                    .font(.subheadline)
+                    .font(.headline)
                     .padding()
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(viewModel.pokemonList.filter { favorites.contains($0.id) }) { pokemon in
-                            NavigationLink {
-                                DetailView(pokemon: pokemon, favorites: $favorites)
-                            } label: {
-                                HStack(spacing: 16) {
-                                    if let imageUrl = pokemon.sprites.front_default,
-                                       let url = URL(string: imageUrl) {
-                                        AsyncImage(url: url) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 60, height: 60)
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                    } else {
-                                        Image(systemName: "questionmark.circle")
+                    LazyVStack(spacing: 10) {
+                        ForEach(appState.favorites, id: \.self) { url in
+                            VStack {
+                                NavigationLink(destination: DetailView(imageURL: url)) {
+                                    AsyncImage(url: URL(string: url)) { image in
+                                        image
                                             .resizable()
-                                            .frame(width: 60, height: 60)
-                                            .foregroundColor(.gray)
+                                            .scaledToFit()
+                                            .cornerRadius(10)
+                                    } placeholder: {
+                                        ProgressView()
                                     }
-
-                                    Text(pokemon.name.capitalized)
-                                        .font(.headline)
+                                    .frame(height: 200)
+                                    .padding(.horizontal)
                                 }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(12)
+
+                                Button("Remove") {
+                                    removeFromFavorites(url)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.red)
                             }
                         }
                     }
-                    .padding()
                 }
             }
         }
         .navigationTitle("Favorites")
     }
+
+    func removeFromFavorites(_ url: String) {
+        if let index = appState.favorites.firstIndex(of: url) {
+            appState.favorites.remove(at: index)
+        }
+    }
 }
+
 

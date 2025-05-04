@@ -7,27 +7,26 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ContentView: View {
-    @State private var favorites: Set<Int> = []
+    @StateObject var appState = AppState()
     
     var body: some View {
         TabView {
             NavigationStack {
-                HomeView(favorites: $favorites)
+                HomeView()
             }
             .tabItem {
                 Label("Browse", systemImage: "house")
             }
 
             NavigationStack {
-                FavoritesView(favorites: $favorites)
+                FavoritesView()
             }
             .tabItem {
                 Label("Favorites", systemImage: "star")
             }
         }
+        .environmentObject(appState)
     }
 }
 

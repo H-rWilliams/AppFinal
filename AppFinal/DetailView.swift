@@ -8,69 +8,44 @@
 import SwiftUI
 
 struct DetailView: View {
-    let pokemon: Pokemon
-    @Binding var favorites: Set<Int>
-     
-    var isFavorite: Bool {
-        favorites.contains(pokemon.id)
-    }
+    let imageURL: String
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if let imageUrl = pokemon.sprites.front_default,
-                   let url = URL(string: imageUrl) {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 150, height: 150)
-                    } placeholder: {
-                        ProgressView()
-                    }
-                } else {
-                    Image(systemName: "questionmark.circle")
-                        .resizable()
-                        .frame(width: 150, height: 150)
-                        .foregroundColor(.gray)
-                }
+        VStack(spacing: 20) {
+            Text("Breed: \(breedName(from: imageURL))")
+                .font(.title2)
+                .padding(.top)
 
-                Text(pokemon.name.capitalized)
-                    .font(.largeTitle)
-                    .bold()
-
-                HStack {
-                    Text("Height: \(pokemon.height)")
-                    Text("Weight: \(pokemon.weight)")
-                }
-                .font(.subheadline)
-
-                VStack(alignment: .leading) {
-                    Text("Type(s):")
-                        .font(.headline)
-
-                    ForEach(pokemon.types, id: \.type.name) { typeEntry in
-                        Text(typeEntry.type.name.capitalized)
-                    }
-                }
-
-                Button(action: {
-                    if isFavorite {
-                        favorites.remove(pokemon.id)
-                    } else {
-                        favorites.insert(pokemon.id)
-                    }
-                }) {
-                    Label(isFavorite ? "Unfavorite" : "Favorite", systemImage: isFavorite ? "heart.fill" : "heart")
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(isFavorite ? Color.red : Color.blue)
-                        .cornerRadius(10)
-                }
+            AsyncImage(url: URL(string: imageURL)) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .cornerRadius(12)
+            } placeholder: {
+                ProgressView()
             }
+            .frame(height: 300)
             .padding()
+
+            Spacer()
         }
-        .navigationTitle(pokemon.name.capitalized)
+        .navigationTitle("Dog Details")
+    }
+
+    // Extract breed name from the image URL
+    func breedName(from url: String) -> String {
+        // Example: https://dog.ceo/api/img/hound-afghan/n02088094_1003.jpg
+        let components = url.split(separator: "/")
+        if let index = components.firstIndex(of: "breeds"), index + 1 < components.count {
+            let rawBreed = components[index + 1].replacingOccurrences(of: "-", with: " ")
+            return rawBreed.capitalized
+        } else if let breedsIndex = components.firstIndex(of: "img"), breedsIndex + 1 < components.count {
+            let rawBreed = components[breedsIndex + 1].replacingOccurrences(of: "-", with: " ")
+            return rawBreed.capitalized
+        }
+        return "Unknown"
     }
 }
+
+
 
